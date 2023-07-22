@@ -2,42 +2,52 @@
 
 public class Field
 {
-    
+    private Field next;
+    private int fieldNumber;
+    private int x;
+    private int y;
+
+    public Field(Field next, int fieldNumber, int x, int y)
+    {
+        this.next = next;
+        this.fieldNumber = fieldNumber;
+        this.x = x;
+        this.y = y;
+    }
+
+    public int FieldNumber => fieldNumber;
+
+    public Field Next => next;
+
+    public int X => x;
+
+    public int Y => y;
 }
 
 public class EmptyField : Field
 {
-    
+    public EmptyField(Field next, int fieldNumber, int x, int y) : base(next, fieldNumber, x, y)
+    {
+    }
 }
 
 public class Ladder : Field
 {
-    private int finalDestinationX;
-    private int finalDestinationY;
-
-    public Ladder(int finalDestinationX, int finalDestinationY)
+    
+    public Ladder(Field next, int fieldNumber, int x, int y) : base(next, fieldNumber, x, y)
     {
-        this.finalDestinationX = finalDestinationX;
-        this.finalDestinationY = finalDestinationY;
+
     }
-
-    public int FinalDestinationX => finalDestinationX;
-
-    public int FinalDestinationY => finalDestinationY;
+    
 }
 
 public class Snake : Field
 {
-    private int finalDestinationX;
-    private int finalDestinationY;
 
-    public Snake(int finalDestinationX, int finalDestinationY)
+    public Snake(Field next, int fieldNumber, int x, int y) : base(next, fieldNumber, x, y)
     {
-        this.finalDestinationX = finalDestinationX;
-        this.finalDestinationY = finalDestinationY;
+        
     }
 
-    public int FinalDestinationX => finalDestinationX;
 
-    public int FinalDestinationY => finalDestinationY;
 }

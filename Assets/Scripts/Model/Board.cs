@@ -1,15 +1,27 @@
 public class Board
 {
-   private Field[,] gameBoard = new Field[10,10];
+   private int boardLength;
+   private int boardWidth;
+   private Field[,] gameBoard;
 
-   public void AddLadder(Ladder ladder, int x, int y)
+   public Board(int boardLength, int boardWidth)
    {
-      gameBoard[x, y] = ladder;
+      this.boardLength = boardLength;
+      this.boardWidth = boardWidth;
+      this.gameBoard = new Field[boardLength,boardWidth];
    }
-   
-   public void AddSnake(Snake snake, int x, int y)
+
+   public int BoardLength => boardLength;
+
+   public int BoardWidth => boardWidth;
+
+   public Field[,] GameBoard => gameBoard;
+
+   public Field AddField(Field field)
    {
-      gameBoard[x, y] = snake;
+      gameBoard[field.X, field.Y] = field;
+      return field;
    }
+    
 }
 
