@@ -4,8 +4,10 @@ public class Invoker
 {
     private static Invoker instance;
 
+    private List<ICommand> history = new List<ICommand>();
     public void ExecuteCommand(ICommand command)
     {
+        history.Add(command);
         command.Execute();
     }
 

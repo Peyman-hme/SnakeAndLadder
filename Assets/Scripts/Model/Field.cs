@@ -1,6 +1,6 @@
 
 
-public class Field
+public abstract class Field
 {
     private Field next;
     private int fieldNumber;
