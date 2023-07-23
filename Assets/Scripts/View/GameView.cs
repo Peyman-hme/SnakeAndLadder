@@ -14,9 +14,9 @@ public class GameView : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void Start()
     {
-        _boardController.RunTurn();
+        BoardController.GetInstance().RunGameLoop();
     }
 
     public void ShowError(string errorMessage)
@@ -24,14 +24,14 @@ public class GameView : MonoBehaviour
         Debug.Log(errorMessage);
     }
 
-    public void ShowPlayerMove(string color, int fieldNumber)
+    public void ShowPlayerMove(int playerID, int fieldNumber)
     {
-        Debug.Log($"Player {color} moved to field {fieldNumber}");
+        Debug.Log($"Player {playerID} moved to field {fieldNumber}");
     }
     
-    public void ShowRollingDice(int diceAmount)
+    public void ShowRolledDice(int diceAmount,int playerID)
     {
-        Debug.Log($"Dice Rolled and number {diceAmount} is shown");
+        Debug.Log($"Dice Rolled by player {playerID} and number {diceAmount} is shown");
     }
     
     public void ShowPlayerClimbingLadder(string color, int source,int dest)
@@ -47,5 +47,18 @@ public class GameView : MonoBehaviour
     public void ShowWinnerPlayer(string color)
     {
         Debug.Log($"Player {color} is winner");
+    }
+    public void ShowStartGame()
+    {
+        Debug.Log($"Game has been started");
+    }
+    
+    public void ShowWaitForPlayer(int playerID)
+    {
+        Debug.Log($"Waiting For Player {playerID}");
+    }
+    public void ShowChangeTurn(int playerID)
+    {
+        Debug.Log($"It's Player {playerID} turn");
     }
 }
