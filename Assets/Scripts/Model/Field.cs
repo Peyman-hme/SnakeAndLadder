@@ -33,21 +33,32 @@ public class EmptyField : Field
 
 public class Ladder : Field
 {
-    
-    public Ladder(Field next, int fieldNumber, int x, int y) : base(next, fieldNumber, x, y)
-    {
+    private int finalDestX;
+    private int finalDestY;
 
+    public Ladder(Field next, int fieldNumber, int x, int y, int finalDestX, int finalDestY) : base(next, fieldNumber, x, y)
+    {
+        this.finalDestX = finalDestX;
+        this.finalDestY = finalDestY;
     }
-    
+
+    public int FinalDestX => finalDestX;
+
+    public int FinalDestY => finalDestY;
 }
 
 public class Snake : Field
 {
+    private int finalDestX;
+    private int finalDestY;
 
-    public Snake(Field next, int fieldNumber, int x, int y) : base(next, fieldNumber, x, y)
+    public Snake(Field next, int fieldNumber, int x, int y, int finalDestX, int finalDestY) : base(next, fieldNumber, x, y)
     {
-        
+        this.finalDestX = finalDestX;
+        this.finalDestY = finalDestY;
     }
 
+    public int FinalDestX => finalDestX;
 
+    public int FinalDestY => finalDestY;
 }

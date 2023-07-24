@@ -1,27 +1,30 @@
+using System;
 using UnityEngine;
 using Random = System.Random;
 
 public class BoardController
 {
     private static BoardController _instance;
-    private GameState currentState;
+
+    // private GameState currentState;
     private Random random = new Random();
     private int turn;
     private int moveAmount;
     private Board board;
     private Player[] _players;
-    private GameView view;
+    private View view;
     private Field winfield;
     private bool isAnyPlayerWin;
+    private int playerCount;
 
-    public BoardController(GameView view, Board board)
+    public BoardController(View view, Board board)
     {
         this.winfield = null;
         this.turn = 0;
         this.view = view;
         this.board = board;
         _instance = this;
-        currentState = GameState.startGameState;
+        playerCount = 2;
     }
 
     public int Turn => turn;
@@ -31,109 +34,148 @@ public class BoardController
         return _instance;
     }
 
-    public void AddPlayer(int playerCount)
+    public void AddPlayer()
     {
         _players = new Player[playerCount];
         for (int i = 0; i < playerCount; i++)
         {
             _players[i] = new Player(i.ToString(), 0, 0);
         }
+
+        ((GamePort)view).AddPlayer(playerCount, SendWaitForPlayerCommand);
     }
 
     public void StartGame()
     {
         view.ShowStartGame();
-        currentState = GameState.waitForPlayerState;
+        AssembleBoard();
     }
 
     public void WaitForPlayer(int playerID)
     {
         view.ShowWaitForPlayer(playerID);
-        currentState = GameState.rollingDiceState;
+        // RunGameLoop(GameState.rollingDiceState);
     }
 
-    public void RunGameLoop()
+    
+
+    public void SendStartGameCommand()
     {
-        while (true)
+        Invoker.GetInstance().ExecuteCommand(new StartGameCommand());
+    }
+
+    public void SendWaitForPlayerCommand()
+    {
+        Invoker.GetInstance().ExecuteCommand(new WaitForPlayerCommand(turn));
+    }
+
+    public void SendRollingDiceCommand()
+    {
+        int randomNumber = random.Next(1, 7);
+        Invoker.GetInstance().ExecuteCommand(new RolledDiceCommand(randomNumber, turn));
+    }
+
+    public void SendMovePlayerCommand()
+    {
+        Invoker.GetInstance().ExecuteCommand(new MovePlayerCommand(turn, moveAmount));
+    }
+
+    public void SendChangePlayerTurnCommand()
+    {
+        if (moveAmount == 6)
         {
-            if (currentState == GameState.winState)
-            {
-                break;
-            }
-
-            switch (currentState)
-            {
-                case GameState.startGameState:
-                    Invoker.GetInstance().ExecuteCommand(new StartGameCommand());
-                    break;
-                case GameState.waitForPlayerState:
-                    Invoker.GetInstance().ExecuteCommand(new WaitForPlayerCommand(turn));
-                    break;
-                case GameState.rollingDiceState:
-                    
-                    int randomNumber = random.Next(1, 7);
-                    Invoker.GetInstance().ExecuteCommand(new RolledDiceCommand(randomNumber, turn));
-                    break;
-                case GameState.movePlayerState:
-                    Invoker.GetInstance().ExecuteCommand(new MovePlayerCommand(turn, moveAmount));
-                    break;
-                case GameState.climbingLadderStat:
-                    currentState = GameState.changeTurnState;
-                    break;
-                case GameState.snakeBiteState:
-                    currentState = GameState.changeTurnState;
-                    break;
-                case GameState.changeTurnState:
-                    if (moveAmount == 6)
-                    {
-                        currentState = GameState.waitForPlayerState;
-                    }
-                    else
-                    {
-                        Invoker.GetInstance().ExecuteCommand(new ChangePlayerTurnCommand(turn));
-                    }
-
-                    break;
-                case GameState.winState:
-                    break;
-            }
+            SendWaitForPlayerCommand();
+        }
+        else
+        {
+            Invoker.GetInstance().ExecuteCommand(new ChangePlayerTurnCommand(turn));
         }
     }
+
+    public void SendWinPlayerCommand()
+    {
+        Invoker.GetInstance().ExecuteCommand(new PlayerWinCommand(turn));
+    }
+
+
+    public void SendClimbingLadderCommand(Field ladder)
+    {
+        Invoker.GetInstance().ExecuteCommand(new ClimbingLadderCommand(turn, (Ladder)ladder));
+    }
+
+    public void SendSnakeBiteCommand(Field snake)
+    {
+        Invoker.GetInstance().ExecuteCommand(new SnakeBiteCommand(turn, (Snake)snake));
+    }
+
+    public Field GetNextField(int x, int y)
+    {
+        return board.GameBoard[x, y].Next;
+    }
+    
+    public Field GetNextFieldTeleport(int x, int y)
+    {
+        Debug.Log($"{x} {y}");
+        if (board.GameBoard[x, y] is Ladder)
+        {
+            return board.GameBoard[((Ladder)board.GameBoard[x, y]).FinalDestX,((Ladder)board.GameBoard[x, y]).FinalDestY];
+        }
+        if (board.GameBoard[x, y] is Snake)
+        {
+            return board.GameBoard[((Snake)board.GameBoard[x, y]).FinalDestX,((Snake)board.GameBoard[x, y]).FinalDestY];
+        }
+
+        return null;
+    }
+
+    
 
     public void RolledDice(int diceAmount, int playerID)
     {
         moveAmount = diceAmount;
-        view.ShowRolledDice(diceAmount, playerID);
-        currentState = GameState.movePlayerState;
+        ((GamePort)view).RollDice(diceAmount, SendMovePlayerCommand);
     }
 
     public void MovePlayerForward(int moveAmount, int playerID)
     {
-        MoveForward(moveAmount, playerID);
+        int preX = _players[turn].X;
+        int preY = _players[turn].Y;
+        bool isMoved = MoveForwardIfPossible(moveAmount, playerID);
+        
 
-        if (IsThereAnySpecialFieldInPos(_players[playerID].X, _players[playerID].Y) == true)
+        if (isMoved)
         {
             switch (board.GameBoard[_players[playerID].X, _players[playerID].Y])
             {
                 case Ladder ladder:
-                    currentState = GameState.climbingLadderStat;
-                    Invoker.GetInstance().ExecuteCommand(new ClimbingLadderCommand(playerID, ladder));
+                    ((GamePort)view).MoveForwardPlayer(playerID, moveAmount, preX, preY, SendClimbingLadderCommand,
+                        ladder);
+                    
                     break;
                 case Snake snake:
-                    currentState = GameState.snakeBiteState;
-                    Invoker.GetInstance().ExecuteCommand(new SnakeBiteCommand(playerID, snake));
+                    ((GamePort)view).MoveForwardPlayer(playerID, moveAmount, preX, preY, SendSnakeBiteCommand, snake);
+
+                    break;
+                case Field field:
+                    ((GamePort)view).MoveForwardPlayer(playerID, moveAmount, preX, preY, SendChangePlayerTurnCommand,
+                        field);
+
                     break;
             }
-        }
-        else if (CheckWinState())
-        {
-            currentState = GameState.winState;
-            Invoker.GetInstance().ExecuteCommand(new PlayerWinCommand(playerID));
+            if (CheckWinState())
+            {
+                SendWinPlayerCommand();
+            }
+            
         }
         else
         {
-            currentState = GameState.changeTurnState;
+            view.ShowError($"Player {_players[playerID].Color} can not move {moveAmount} field(s)");
+            SendChangePlayerTurnCommand();
         }
+
+
+        
     }
 
 
@@ -146,36 +188,36 @@ public class BoardController
     {
         int sourceX = _players[playerID].X;
         int sourceY = _players[playerID].Y;
-        _players[playerID].X = ladder.Next.X;
-        _players[playerID].Y = ladder.Next.Y;
-        view.ShowPlayerClimbingLadder(_players[playerID].Color, board.GameBoard[sourceX, sourceY].FieldNumber,
-            board.GameBoard[_players[playerID].X, _players[playerID].Y].FieldNumber);
+        Debug.Log($"{sourceX},{sourceY}");
+        _players[playerID].X = ladder.FinalDestX;
+        _players[playerID].Y = ladder.FinalDestY;
+        ((GamePort)view).PlayerClimbingLadder(playerID,sourceX,sourceY,SendChangePlayerTurnCommand);
+
     }
 
     public void BittenBySnake(Snake snake, int playerID)
     {
         int sourceX = _players[playerID].X;
         int sourceY = _players[playerID].Y;
-        _players[playerID].X = snake.Next.X;
-        _players[playerID].Y = snake.Next.Y;
-        view.ShowPlayerBittenBySnake(_players[playerID].Color, board.GameBoard[sourceX, sourceY].FieldNumber,
-            board.GameBoard[_players[playerID].X, _players[playerID].Y].FieldNumber);
+        _players[playerID].X = snake.FinalDestX;
+        _players[playerID].Y = snake.FinalDestY;
+        ((GamePort)view).PlayerBittenBySnake(playerID,sourceX,sourceY,SendChangePlayerTurnCommand);
     }
 
     public void NextTurn(int playerID)
     {
-        playerID = (playerID + 1) % _players.Length;
-        turn = playerID;
-        currentState = GameState.waitForPlayerState;
-        view.ShowChangeTurn(playerID);
+        // playerID = (playerID + 1) % _players.Length;
+        // turn = playerID;
+        Debug.Log("Turn Changed");
+        turn = (turn + 1) % _players.Length;
+        ((GamePort)view).ShowChangePlayer(playerID,SendWaitForPlayerCommand);
     }
 
-    private void MoveForward(int moveAmount, int playerID)
+    private bool MoveForwardIfPossible(int moveAmount, int playerID)
     {
         if (IsAbleToMoveForward(moveAmount, playerID) == false)
         {
-            view.ShowError($"Player {_players[playerID].Color} can not move {moveAmount} field(s)");
-            return;
+            return false;
         }
 
         Field nextField = board.GameBoard[_players[playerID].X, _players[playerID].Y];
@@ -186,7 +228,7 @@ public class BoardController
 
         _players[playerID].X = nextField.X;
         _players[playerID].Y = nextField.Y;
-        view.ShowPlayerMove(turn, nextField.FieldNumber);
+        return true;
     }
 
     private bool IsAbleToMoveForward(int moveAmount, int playerID)
@@ -249,16 +291,22 @@ public class BoardController
             }
         }
 
-        board.AddField(new Ladder(board.GameBoard[2, 2], 2, 1, 0));
-        board.AddField(new Ladder(board.GameBoard[5, 1], 5, 4, 0));
-        board.AddField(new Ladder(board.GameBoard[2, 4], 9, 3, 1));
-        board.AddField(new Ladder(board.GameBoard[4, 4], 18, 5, 2));
-        board.AddField(new Ladder(board.GameBoard[1, 5], 25, 0, 4));
+        board.AddField(new Ladder(board.GameBoard[1, 0].Next, board.GameBoard[1, 0].FieldNumber, 1, 0 ,2, 2));
+        board.AddField(new Ladder(board.GameBoard[4, 0].Next, board.GameBoard[4, 0].FieldNumber,4, 0 ,5, 1));
+        board.AddField(new Ladder(board.GameBoard[3, 1].Next, board.GameBoard[3, 1].FieldNumber,3, 1 ,2, 4));
+        board.AddField(new Ladder(board.GameBoard[5, 2].Next, board.GameBoard[5, 2].FieldNumber, 5, 2,4, 4));
+        board.AddField(new Ladder(board.GameBoard[0, 4].Next, board.GameBoard[0, 4].FieldNumber, 0, 4,1, 5));
 
-        board.AddField(new Snake(board.GameBoard[3, 0], 17, 4, 2));
-        board.AddField(new Snake(board.GameBoard[5, 0], 20, 4, 3));
-        board.AddField(new Snake(board.GameBoard[3, 2], 24, 0, 3));
-        board.AddField(new Snake(board.GameBoard[5, 4], 32, 4, 5));
-        board.AddField(new Snake(board.GameBoard[0, 1], 34, 2, 5));
+        board.AddField(new Snake(board.GameBoard[4, 2].Next, board.GameBoard[4, 2].FieldNumber, 4, 2,3, 0));
+        board.AddField(new Snake(board.GameBoard[4, 3].Next, board.GameBoard[4, 3].FieldNumber, 4, 3,5, 0));
+        board.AddField(new Snake(board.GameBoard[0, 3].Next, board.GameBoard[0, 3].FieldNumber, 0, 3,3, 2));
+        board.AddField(new Snake(board.GameBoard[4, 5].Next, board.GameBoard[4, 5].FieldNumber, 4, 5,5, 4));
+        board.AddField(new Snake(board.GameBoard[2, 5].Next, board.GameBoard[2, 5].FieldNumber, 2, 5,0, 1));
+
+        ((GamePort)view).SetBoard(board, AddPlayer);
+    }
+
+    private void Foo()
+    {
     }
 }
