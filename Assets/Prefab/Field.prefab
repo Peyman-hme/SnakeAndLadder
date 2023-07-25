@@ -71,7 +71,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: -1
+  m_SortingOrder: -2
   m_Sprite: {fileID: 7482667652216324306, guid: 31df5d429e7ca564186a122e9a67cbe6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -165,7 +165,7 @@ TextMesh:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3683232418873543117}
   m_Text: 10
-  m_OffsetZ: 0
+  m_OffsetZ: -1
   m_CharacterSize: 0.25
   m_LineSpacing: 1
   m_Anchor: 4
