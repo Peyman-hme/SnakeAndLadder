@@ -42,9 +42,9 @@ public class GameView : View
         Debug.Log($"Player {color} bitten by snake at {source} and sent to {dest}");
     }
     
-    public override void ShowWinnerPlayer(string color)
+    public override void ShowWinnerPlayer(int playerID)
     {
-        Debug.Log($"Player {color} is winner");
+        Debug.Log($"Player {playerID} is winner");
     }
     public override void ShowStartGame()
     {

@@ -14,7 +14,7 @@ public abstract class View : MonoBehaviour
 
     public abstract void ShowPlayerBittenBySnake(string color, int source, int dest);
 
-    public abstract void ShowWinnerPlayer(string color);
+    public abstract void ShowWinnerPlayer(int playerID);
 
     public abstract void ShowStartGame();
 

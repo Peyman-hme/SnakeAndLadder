@@ -110,6 +110,7 @@ public class BoardController
 
     public Field GetNextField(int x, int y)
     {
+        Debug.Log($"{x}, {y}=>{board.GameBoard[x, y].Next.X}, {board.GameBoard[x, y].Next.Y}");
         return board.GameBoard[x, y].Next;
     }
     
@@ -181,7 +182,7 @@ public class BoardController
 
     public void WinPlayer(int playerID)
     {
-        view.ShowWinnerPlayer(playerID.ToString());
+        view.ShowWinnerPlayer(playerID);
     }
 
     public void ClimbingLadder(Ladder ladder, int playerID)
@@ -206,10 +207,10 @@ public class BoardController
 
     public void NextTurn(int playerID)
     {
-        // playerID = (playerID + 1) % _players.Length;
-        // turn = playerID;
+        playerID = (playerID + 1) % _players.Length;
+        turn = playerID;
         Debug.Log("Turn Changed");
-        turn = (turn + 1) % _players.Length;
+        // turn = (turn + 1) % _players.Length;
         ((GamePort)view).ShowChangePlayer(playerID,SendWaitForPlayerCommand);
     }
 
@@ -225,7 +226,7 @@ public class BoardController
         {
             nextField = nextField.Next;
         }
-
+        Debug.Log($"{nextField.X} va {nextField.Y}");
         _players[playerID].X = nextField.X;
         _players[playerID].Y = nextField.Y;
         return true;

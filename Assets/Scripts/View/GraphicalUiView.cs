@@ -21,7 +21,7 @@ public class GraphicalUiView : View, GamePort
     public GameObject[] playersInfo;
     public Button rollDiceButton;
     public Text DiceNumber;
-
+    public GameObject winPopup;
     void Awake()
     {
         _boardController = new BoardController(this, new Board(6, 6));
@@ -34,7 +34,6 @@ public class GraphicalUiView : View, GamePort
         _boardController.SendStartGameCommand();
     }
 
-    //TODO
     public override void ShowError(string errorMessage)
     {
         Debug.Log(errorMessage);
@@ -60,9 +59,11 @@ public class GraphicalUiView : View, GamePort
         Debug.Log($"Player {color} bitten by snake at {source} and sent to {dest}");
     }
 
-    public override void ShowWinnerPlayer(string color)
+    public override void ShowWinnerPlayer(int playerID)
     {
-        Debug.Log($"Player {color} is winner");
+        winPopup.SetActive(true);
+        winPopup.transform.Find("MessageText").GetComponent<Text>().text = $"Player {playerID} wins";
+        rollDiceButton.interactable = false;
     }
 
     public override void ShowStartGame()
@@ -84,6 +85,7 @@ public class GraphicalUiView : View, GamePort
 
     public void ShowChangePlayer(int playerID, Action OnComplete)
     {
+        Debug.Log("showing turn change");
         for (var i = 0; i < playersInfo.Length; i++)
         {
             if (i != playerID)
@@ -215,8 +217,8 @@ public class GraphicalUiView : View, GamePort
             }
 
             yield return new WaitForSeconds(0.5f);
-            sourceX = (int)destPos.x;
-            sourceY = (int)destPos.y;
+            sourceX = next.X;
+            sourceY = next.Y;
             prePos = destPos;
         }
     }
