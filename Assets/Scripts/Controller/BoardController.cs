@@ -73,9 +73,7 @@ public class BoardController
             { "commandName",  command.GetName()},
             { "command",  command.ToJson()}
         };
-        Debug.Log("goosfand");
         _client.SendMatchStateToUsers(OpCodes.GameCommand,values.ToJson());
-        // Invoker.GetInstance().ExecuteCommand(new StartGameCommand());
     }
 
     public void SendWaitForPlayerCommand()
@@ -103,8 +101,6 @@ public class BoardController
         };
 
         _client.SendMatchStateToUsers(OpCodes.GameCommand,values.ToJson());
-        Debug.Log("roll sent");
-        // Invoker.GetInstance().ExecuteCommand(new RolledDiceCommand(randomNumber, turn));
     }
     public void SendRequestToHost(long opCode,string state)
     {
@@ -124,9 +120,7 @@ public class BoardController
 
             { "command",  command.ToJson()},
         };
-        Debug.Log($"BEFORE send {command.ToJson()}");
         _client.SendMatchStateToUsers(OpCodes.GameCommand,values.ToJson());
-        // Invoker.GetInstance().ExecuteCommand(new MovePlayerCommand(turn, moveAmount));
     }
 
     public void SendChangePlayerTurnCommand()
@@ -195,13 +189,11 @@ public class BoardController
 
     public Field GetNextField(int x, int y)
     {
-        Debug.Log($"{x}, {y}=>{board.GameBoard[x, y].Next.X}, {board.GameBoard[x, y].Next.Y}");
         return board.GameBoard[x, y].Next;
     }
     
     public Field GetNextFieldTeleport(int x, int y)
     {
-        Debug.Log($"{x} {y}");
         if (board.GameBoard[x, y] is Ladder)
         {
             return board.GameBoard[((Ladder)board.GameBoard[x, y]).FinalDestX,((Ladder)board.GameBoard[x, y]).FinalDestY];
@@ -274,7 +266,6 @@ public class BoardController
     {
         int sourceX = _players[playerID].X;
         int sourceY = _players[playerID].Y;
-        Debug.Log($"{sourceX},{sourceY}");
         _players[playerID].X = ladderX;
         _players[playerID].Y = ladderY;
         ((GamePort)view).PlayerClimbingLadder(playerID,sourceX,sourceY,SendChangePlayerTurnCommand);
@@ -294,8 +285,6 @@ public class BoardController
     {
         playerID = (playerID + 1) % _players.Length;
         turn = playerID;
-        Debug.Log("Turn Changed");
-        // turn = (turn + 1) % _players.Length;
         ((GamePort)view).ShowChangePlayer(playerID,SendWaitForPlayerCommand);
     }
 
@@ -311,7 +300,6 @@ public class BoardController
         {
             nextField = nextField.Next;
         }
-        Debug.Log($"{nextField.X} va {nextField.Y}");
         _players[playerID].X = nextField.X;
         _players[playerID].Y = nextField.Y;
         return true;

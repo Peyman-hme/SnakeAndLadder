@@ -22,7 +22,6 @@ public class MovePlayerCommand : ICommand
 
     public void Execute()
     {
-        Debug.Log("move player");
         new Receiver().MovePlayerForward(moveAmount,playerID);
     }
 
@@ -49,7 +48,6 @@ public class RolledDiceCommand : ICommand
 
     public void Execute()
     {
-        Debug.Log("roll dice");
 
         new Receiver().RolledDice(diceAmount,playerID);
     }

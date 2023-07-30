@@ -28,7 +28,6 @@ namespace Nakama.Snippets
         {
             var deviceId = SystemInfo.deviceUniqueIdentifier;
             var session = await _client.AuthenticateDeviceAsync(deviceId);
-            Debug.Log(session);
 
             _socket = _client.NewSocket();
             _socket.Connected += () => Debug.Log("Socket connected.");

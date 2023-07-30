@@ -32,8 +32,6 @@ public class GraphicalUiView : View, GamePort
     // Update is called once per frame
     void Start()
     {
-        Debug.Log(JsonUtility.ToJson(new MovePlayerCommand(5, 6)));
-        Invoker.GetInstance().ExecuteCommand(new StartGameCommand());
     }
 
     void Update()
@@ -113,6 +111,10 @@ public class GraphicalUiView : View, GamePort
         if (playerID == currentPlayerID)
         {
             rollDiceButton.interactable = true;
+        }
+        else
+        {
+            rollDiceButton.interactable = false;
         }
     }
 
