@@ -22,6 +22,7 @@ public class GraphicalUiView : View, GamePort
     public Button rollDiceButton;
     public Text DiceNumber;
     public GameObject winPopup;
+    public GameObject waitingPanel;
 
     void Awake()
     {
@@ -73,6 +74,7 @@ public class GraphicalUiView : View, GamePort
 
     public override void ShowStartGame()
     {
+        waitingPanel.SetActive(false);
         Debug.Log($"Game has been started");
     }
 
