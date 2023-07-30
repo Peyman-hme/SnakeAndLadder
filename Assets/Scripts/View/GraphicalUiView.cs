@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Nakama.TinyJson;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,7 +13,6 @@ public class GraphicalUiView : View, GamePort
     private GameObject[,] gameBoard;
     private List<GameObject> players = new List<GameObject>();
     private Color[] playerColors = new[] { Color.blue, Color.red, Color.yellow, Color.green };
-
     public GameObject singleField;
     public GameObject playerPrefab;
     public GameObject boardObj;
@@ -22,6 +22,7 @@ public class GraphicalUiView : View, GamePort
     public Button rollDiceButton;
     public Text DiceNumber;
     public GameObject winPopup;
+
     void Awake()
     {
         _boardController = new BoardController(this, new Board(6, 6));
@@ -31,7 +32,13 @@ public class GraphicalUiView : View, GamePort
     // Update is called once per frame
     void Start()
     {
-        _boardController.SendStartGameCommand();
+        Debug.Log(JsonUtility.ToJson(new MovePlayerCommand(5, 6)));
+        Invoker.GetInstance().ExecuteCommand(new StartGameCommand());
+    }
+
+    void Update()
+    {
+        Invoker.GetInstance().Update();
     }
 
     public override void ShowError(string errorMessage)
@@ -101,10 +108,12 @@ public class GraphicalUiView : View, GamePort
         OnComplete();
     }
 
-    public override void ShowWaitForPlayer(int playerID)
+    public override void ShowWaitForPlayer(int playerID, int currentPlayerID)
     {
-        rollDiceButton.interactable = true;
-
+        if (playerID == currentPlayerID)
+        {
+            rollDiceButton.interactable = true;
+        }
     }
 
     public override void ShowChangeTurn(int playerID)
@@ -158,6 +167,7 @@ public class GraphicalUiView : View, GamePort
 
     public void RollDice(int diceAmount, Action OnComplete)
     {
+        Debug.Log($"showing dice number {diceAmount}");
         DiceNumber.text = diceAmount.ToString();
         OnComplete();
     }
@@ -175,6 +185,7 @@ public class GraphicalUiView : View, GamePort
         yield return StartCoroutine(MoveSmoothly(playerID, moveAmount, sourceX, sourceY));
         OnComplete(field);
     }
+
     private IEnumerator DoMove(int playerID, int moveAmount, int sourceX, int sourceY, Action OnComplete)
     {
         yield return StartCoroutine(MoveSmoothly(playerID, moveAmount, sourceX, sourceY));
@@ -185,7 +196,7 @@ public class GraphicalUiView : View, GamePort
     {
         StartCoroutine(DoMoveSmoothlyTeleport(playerID, sourceX, sourceY, OnComplete));
     }
-   
+
 
     private IEnumerator DoMoveSmoothlyTeleport(int playerID, int sourceX, int sourceY, Action OnComplete)
     {
@@ -198,8 +209,6 @@ public class GraphicalUiView : View, GamePort
         StartCoroutine(DoMoveSmoothlyTeleport(playerID, sourceX, sourceY, OnComplete));
     }
 
-    
-    
 
     private IEnumerator MoveSmoothly(int playerID, int moveAmount, int sourceX, int sourceY)
     {
@@ -247,7 +256,7 @@ public class GraphicalUiView : View, GamePort
     public void MoveForwardPlayer(int playerID, int moveAmount, int sourceX, int sourceY, Action OnComplete,
         Field field)
     {
-        StartCoroutine(DoMove(playerID, moveAmount, sourceX, sourceY,OnComplete));
+        StartCoroutine(DoMove(playerID, moveAmount, sourceX, sourceY, OnComplete));
     }
 
     private void SetFieldAttributes(GameObject field, int number, GameObject parent)
@@ -261,11 +270,16 @@ public class GraphicalUiView : View, GamePort
     {
         DiceNumber.text = "Rolling";
         rollDiceButton.interactable = false;
-        Invoke("SendRollDice", 1);
+        Invoke("SendRollDiceRequest", 1);
     }
 
-    void SendRollDice()
+    void SendRollDiceRequest()
     {
-        _boardController.SendRollingDiceCommand();
+        _boardController.SendRequestToHost(OpCodes.RollDice, "");
+    }
+
+    public void TryFindMatch()
+    {
+        _boardController.TryFindMatch();
     }
 }

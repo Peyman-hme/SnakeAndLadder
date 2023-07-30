@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Nakama.TinyJson;
 using UnityEngine;
 using Random = System.Random;
 
@@ -16,6 +18,9 @@ public class BoardController
     private Field winfield;
     private bool isAnyPlayerWin;
     private int playerCount;
+    private Client _client;
+
+    
 
     public BoardController(View view, Board board)
     {
@@ -25,6 +30,7 @@ public class BoardController
         this.board = board;
         _instance = this;
         playerCount = 2;
+        (_client = new Client()).Start();
     }
 
     public int Turn => turn;
@@ -53,7 +59,7 @@ public class BoardController
 
     public void WaitForPlayer(int playerID)
     {
-        view.ShowWaitForPlayer(playerID);
+        view.ShowWaitForPlayer(playerID,_client.CurrentPlayerID);
         // RunGameLoop(GameState.rollingDiceState);
     }
 
@@ -61,23 +67,66 @@ public class BoardController
 
     public void SendStartGameCommand()
     {
-        Invoker.GetInstance().ExecuteCommand(new StartGameCommand());
+        StartGameCommand command = new StartGameCommand();
+        var values = new Dictionary<string, string>
+        {
+            { "commandName",  command.GetName()},
+            { "command",  command.ToJson()}
+        };
+        Debug.Log("goosfand");
+        _client.SendMatchStateToUsers(OpCodes.GameCommand,values.ToJson());
+        // Invoker.GetInstance().ExecuteCommand(new StartGameCommand());
     }
 
     public void SendWaitForPlayerCommand()
     {
-        Invoker.GetInstance().ExecuteCommand(new WaitForPlayerCommand(turn));
+        WaitForPlayerCommand command = new WaitForPlayerCommand(turn);
+        var values = new Dictionary<string, string>
+        {
+            { "commandName",  command.GetName()},
+            { "command",  command.ToJson()}
+        };
+
+        _client.SendMatchStateToUsers(OpCodes.GameCommand,values.ToJson());
+        // Invoker.GetInstance().ExecuteCommand(new WaitForPlayerCommand(turn));
     }
 
     public void SendRollingDiceCommand()
     {
         int randomNumber = random.Next(1, 7);
-        Invoker.GetInstance().ExecuteCommand(new RolledDiceCommand(randomNumber, turn));
-    }
+        RolledDiceCommand command = new RolledDiceCommand(randomNumber, turn);
+        var values = new Dictionary<string, string>
+        {
+            { "commandName",  command.GetName()},
 
+            { "command",  command.ToJson()},
+        };
+
+        _client.SendMatchStateToUsers(OpCodes.GameCommand,values.ToJson());
+        Debug.Log("roll sent");
+        // Invoker.GetInstance().ExecuteCommand(new RolledDiceCommand(randomNumber, turn));
+    }
+    public void SendRequestToHost(long opCode,string state)
+    {
+        _client.SendMatchStateToHost(opCode,state);
+        
+    }
+    public void TryFindMatch()
+    {
+        _client.FindMatch();
+    }
     public void SendMovePlayerCommand()
     {
-        Invoker.GetInstance().ExecuteCommand(new MovePlayerCommand(turn, moveAmount));
+        MovePlayerCommand command = new MovePlayerCommand(turn, moveAmount);
+        var values = new Dictionary<string, string>
+        {
+            { "commandName",  command.GetName()},
+
+            { "command",  command.ToJson()},
+        };
+        Debug.Log($"BEFORE send {command.ToJson()}");
+        _client.SendMatchStateToUsers(OpCodes.GameCommand,values.ToJson());
+        // Invoker.GetInstance().ExecuteCommand(new MovePlayerCommand(turn, moveAmount));
     }
 
     public void SendChangePlayerTurnCommand()
@@ -88,24 +137,60 @@ public class BoardController
         }
         else
         {
-            Invoker.GetInstance().ExecuteCommand(new ChangePlayerTurnCommand(turn));
+            ChangePlayerTurnCommand command = new ChangePlayerTurnCommand(turn);
+            var values = new Dictionary<string, string>
+            {
+                { "commandName",  command.GetName()},
+
+                { "command",  command.ToJson()},
+            };
+
+            _client.SendMatchStateToUsers(OpCodes.GameCommand,values.ToJson());
+            // Invoker.GetInstance().ExecuteCommand(new ChangePlayerTurnCommand(turn));
         }
     }
 
     public void SendWinPlayerCommand()
     {
-        Invoker.GetInstance().ExecuteCommand(new PlayerWinCommand(turn));
+        PlayerWinCommand command = new PlayerWinCommand(turn);
+        var values = new Dictionary<string, string>
+        {
+            { "commandName",  command.GetName()},
+
+            { "command",  command.ToJson()},
+        };
+
+        _client.SendMatchStateToUsers(OpCodes.GameCommand,values.ToJson());
+        // Invoker.GetInstance().ExecuteCommand(new PlayerWinCommand(turn));
     }
 
 
     public void SendClimbingLadderCommand(Field ladder)
     {
-        Invoker.GetInstance().ExecuteCommand(new ClimbingLadderCommand(turn, (Ladder)ladder));
+        ClimbingLadderCommand command = new ClimbingLadderCommand(turn, ((Ladder)ladder).FinalDestX,((Ladder)ladder).FinalDestY);
+        var values = new Dictionary<string, string>
+        {
+            { "commandName",  command.GetName()},
+
+            { "command",  command.ToJson()},
+        };
+
+        _client.SendMatchStateToUsers(OpCodes.GameCommand,values.ToJson());
+        // Invoker.GetInstance().ExecuteCommand(new ClimbingLadderCommand(turn, (Ladder)ladder));
     }
 
     public void SendSnakeBiteCommand(Field snake)
     {
-        Invoker.GetInstance().ExecuteCommand(new SnakeBiteCommand(turn, (Snake)snake));
+        SnakeBiteCommand command = new SnakeBiteCommand(turn, ((Snake)snake).FinalDestX,((Snake)snake).FinalDestY);
+        var values = new Dictionary<string, string>
+        {
+            { "commandName",  command.GetName()},
+
+            { "command",  command.ToJson()},
+        };
+
+        _client.SendMatchStateToUsers(OpCodes.GameCommand,values.ToJson());
+        // Invoker.GetInstance().ExecuteCommand(new SnakeBiteCommand(turn, (Snake)snake));
     }
 
     public Field GetNextField(int x, int y)
@@ -185,23 +270,23 @@ public class BoardController
         view.ShowWinnerPlayer(playerID);
     }
 
-    public void ClimbingLadder(Ladder ladder, int playerID)
+    public void ClimbingLadder(int ladderX,int ladderY, int playerID)
     {
         int sourceX = _players[playerID].X;
         int sourceY = _players[playerID].Y;
         Debug.Log($"{sourceX},{sourceY}");
-        _players[playerID].X = ladder.FinalDestX;
-        _players[playerID].Y = ladder.FinalDestY;
+        _players[playerID].X = ladderX;
+        _players[playerID].Y = ladderY;
         ((GamePort)view).PlayerClimbingLadder(playerID,sourceX,sourceY,SendChangePlayerTurnCommand);
 
     }
 
-    public void BittenBySnake(Snake snake, int playerID)
+    public void BittenBySnake(int snakeX,int snakeY, int playerID)
     {
         int sourceX = _players[playerID].X;
         int sourceY = _players[playerID].Y;
-        _players[playerID].X = snake.FinalDestX;
-        _players[playerID].Y = snake.FinalDestY;
+        _players[playerID].X = snakeX;
+        _players[playerID].Y = snakeY;
         ((GamePort)view).PlayerBittenBySnake(playerID,sourceX,sourceY,SendChangePlayerTurnCommand);
     }
 

@@ -15,14 +15,14 @@ public class Receiver
         BoardController.GetInstance().MovePlayerForward(diceAmount, playerID);
     }
 
-    public void ClimbingLadder(Ladder ladder, int playerID)
+    public void ClimbingLadder(int ladderX,int ladderY, int playerID)
     {
-        BoardController.GetInstance().ClimbingLadder(ladder, playerID);
+        BoardController.GetInstance().ClimbingLadder(ladderX,ladderY, playerID);
     }
 
-    public void SnakeBite(Snake snake, int playerID)
+    public void SnakeBite(int snakeX,int snakeY, int playerID)
     {
-        BoardController.GetInstance().BittenBySnake(snake, playerID);
+        BoardController.GetInstance().BittenBySnake(snakeX,snakeY, playerID);
     }
 
     public void WinPlayer(int playerID)

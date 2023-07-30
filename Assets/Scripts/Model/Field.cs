@@ -1,27 +1,23 @@
 
+using System;
 
+[Serializable]
 public abstract class Field
 {
-    private Field next;
-    private int fieldNumber;
-    private int x;
-    private int y;
+    public Field Next;
+    public int FieldNumber;
+    public int X;
+    public int Y;
 
     public Field(Field next, int fieldNumber, int x, int y)
     {
-        this.next = next;
-        this.fieldNumber = fieldNumber;
-        this.x = x;
-        this.y = y;
+        this.Next = next;
+        this.FieldNumber = fieldNumber;
+        this.X = x;
+        this.Y = y;
     }
 
-    public int FieldNumber => fieldNumber;
-
-    public Field Next => next;
-
-    public int X => x;
-
-    public int Y => y;
+   
 }
 
 public class EmptyField : Field
@@ -33,32 +29,27 @@ public class EmptyField : Field
 
 public class Ladder : Field
 {
-    private int finalDestX;
-    private int finalDestY;
+    public int FinalDestX;
+    public int FinalDestY;
 
     public Ladder(Field next, int fieldNumber, int x, int y, int finalDestX, int finalDestY) : base(next, fieldNumber, x, y)
     {
-        this.finalDestX = finalDestX;
-        this.finalDestY = finalDestY;
+        this.FinalDestX = finalDestX;
+        this.FinalDestY = finalDestY;
     }
 
-    public int FinalDestX => finalDestX;
-
-    public int FinalDestY => finalDestY;
+     
 }
 
 public class Snake : Field
 {
-    private int finalDestX;
-    private int finalDestY;
+    public int FinalDestX;
+    public int FinalDestY;
 
     public Snake(Field next, int fieldNumber, int x, int y, int finalDestX, int finalDestY) : base(next, fieldNumber, x, y)
     {
-        this.finalDestX = finalDestX;
-        this.finalDestY = finalDestY;
+        this.FinalDestX = finalDestX;
+        this.FinalDestY = finalDestY;
     }
-
-    public int FinalDestX => finalDestX;
-
-    public int FinalDestY => finalDestY;
+ 
 }

@@ -51,7 +51,7 @@ public class GameView : View
         Debug.Log($"Game has been started");
     }
     
-    public override void ShowWaitForPlayer(int playerID)
+    public override void ShowWaitForPlayer(int playerID,int currentPlayerID)
     {
         Debug.Log($"Waiting For Player {playerID}");
     }

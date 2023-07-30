@@ -18,7 +18,7 @@ public abstract class View : MonoBehaviour
 
     public abstract void ShowStartGame();
 
-    public abstract void ShowWaitForPlayer(int playerID);
+    public abstract void ShowWaitForPlayer(int playerID,int currentPlayerID);
 
     public abstract void ShowChangeTurn(int playerID);
 }

@@ -1,178 +1,215 @@
 
+using UnityEngine;
+
 public interface ICommand
 {
     void Execute();
+    string GetName();
 }
-
+[System.Serializable]
 public class MovePlayerCommand : ICommand
 {
-    private Receiver receiver;
-    private int playerID;
-    private int moveAmount;
+    public int playerID;
+    public int moveAmount;
 
     public MovePlayerCommand(int playerID, int moveAmount)
     {
         this.playerID = playerID;
         this.moveAmount = moveAmount;
-        receiver = new Receiver();
+        
     }
-
-    public int PlayerID => playerID;
+    
 
     public void Execute()
     {
-        receiver.MovePlayerForward(moveAmount,playerID);
+        Debug.Log("move player");
+        new Receiver().MovePlayerForward(moveAmount,playerID);
     }
 
-    
+    public string GetName()
+    {
+        return CommandName.MovePlayer;
+    }
 }
-
+[System.Serializable]
 public class RolledDiceCommand : ICommand
 {
-    private Receiver receiver;
-    private int diceAmount;
-    private int playerID;
+    public int diceAmount;
+    public int playerID;
 
     public RolledDiceCommand(int diceAmount, int playerID)
     {
         this.diceAmount = diceAmount;
         this.playerID = playerID;
-        receiver = new Receiver();
+        
     }
  
 
-    public int DiceAmount => diceAmount;
-
-    public int PlayerID => playerID;
+    
 
     public void Execute()
     {
-        receiver.RolledDice(diceAmount,playerID);
+        Debug.Log("roll dice");
+
+        new Receiver().RolledDice(diceAmount,playerID);
+    }
+
+    public string GetName()
+    {
+        return CommandName.RollDice;
     }
 }
 
-
+[System.Serializable]
 public class WaitForPlayerCommand : ICommand
 {
-    private Receiver receiver;
-    private int playerID;
+    public int playerID;
 
     public WaitForPlayerCommand(int playerID)
     {
         this.playerID = playerID;
-        receiver = new Receiver();
+        
     }
     
-    public int PlayerID => playerID;
+   
 
     
 
     public void Execute()
     {
-        receiver.WaitForPlayer(playerID);
+        new Receiver().WaitForPlayer(playerID);
+    }
+
+    public string GetName()
+    {
+        return CommandName.WaitForPlayer;
     }
 }
-
+[System.Serializable]
 public class ClimbingLadderCommand : ICommand
 {
-    private Receiver receiver;
 
-    private int playerID;
-    private Ladder ladder;
+    public int playerID;
+    public int ladderX;
+    public int ladderY;
 
-    public ClimbingLadderCommand(int playerID, Ladder ladder)
+    public ClimbingLadderCommand(int playerID, int ladderX, int ladderY)
     {
         this.playerID = playerID;
-        this.ladder = ladder;
-        receiver = new Receiver();
+        this.ladderX = ladderX;
+        this.ladderY = ladderY;
     }
 
-    
-
-    public Ladder Ladder => ladder;
-
-    public int PlayerID => playerID;
 
     public void Execute()
     {
-        receiver.ClimbingLadder(ladder,playerID);
+        new Receiver().ClimbingLadder(ladderX,ladderY,playerID);
+    }
+
+    public string GetName()
+    {
+        return CommandName.ClimbLadder;
     }
 }
-
+[System.Serializable]
 public class SnakeBiteCommand : ICommand
 {
-    private Receiver receiver;
 
-    private int playerID;
-    private Snake snake;
+    public int playerID;
+    public int snakeX;
+    public int snakeY;
 
-    
 
-    public SnakeBiteCommand(int playerID, Snake snake)
+    public SnakeBiteCommand(int playerID, int snakeX, int snakeY)
     {
         this.playerID = playerID;
-        this.snake = snake;
-        receiver = new Receiver();
+        this.snakeX = snakeX;
+        this.snakeY = snakeY;
     }
 
-    public Snake Snake => snake;
-
-    public int PlayerID => playerID;
 
     public void Execute()
     {
-        receiver.SnakeBite(snake,playerID);
+        new Receiver().SnakeBite(snakeX,snakeY,playerID);
+    }
+
+    public string GetName()
+    {
+        return CommandName.BiteSnake;
     }
 }
-
+[System.Serializable]
 public class PlayerWinCommand : ICommand
 {
-    private Receiver receiver;
 
-    private int playerID;
+    public int playerID;
 
     public PlayerWinCommand(int playerID)
     {
         this.playerID = playerID;
-        receiver = new Receiver();
+        
     }
 
-    public int PlayerID => playerID;
     
     public void Execute()
     {
-        receiver.WinPlayer(playerID);
+        new Receiver().WinPlayer(playerID);
+    }
+
+    public string GetName()
+    {
+        return CommandName.WinPlayer;
     }
 }
-
+[System.Serializable]
 public class StartGameCommand : ICommand
 {
-    private Receiver receiver;
 
     public StartGameCommand()
     {
-        receiver = new Receiver();
+        
     }
 
     public void Execute()
     {
-        receiver.StartGame();
+        new Receiver().StartGame();
+    }
+
+    public string GetName()
+    {
+        return CommandName.StartGame;
     }
 }
-
+[System.Serializable]
 public class ChangePlayerTurnCommand : ICommand
 {
-    private Receiver receiver;
-    private int playerID;
+    public int playerID;
 
     public ChangePlayerTurnCommand(int playerID)
     {
         this.playerID = playerID;
-        receiver = new Receiver();
     }
 
     public void Execute()
     {
-        receiver.ChangePlayerTurn(playerID);
+        new Receiver().ChangePlayerTurn(playerID);
     }
+
+    public string GetName()
+    {
+        return CommandName.ChangeTurn;
+    }
+
+}
+
+public class CommandName
+{
+    public const string RollDice = "RollDice";
+    public const string MovePlayer = "MovePlayer";
+    public const string ClimbLadder = "ClimbLadder";
+    public const string BiteSnake = "BiteSnake";
+    public const string WinPlayer = "WinPlayer";
+    public const string ChangeTurn = "ChangeTurn";
+    public const string StartGame = "StartGame";
+    public const string WaitForPlayer = "WaitForPlayer";
 }
